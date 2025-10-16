@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "amVersion": "ForgeRock Access Management 8.1.0-SNAPSHOT Build 3fcd04b8178750a006a4b1b1719345d0cba3e68f (2025-October-02 15:38)",
+    "exportDate": "2025-10-16T11:01:27.430Z",
+    "origin": "https://openam-tasos.forgeblocks.com/am/json/node-designer/node-type/",
+    "exportedBy": "anastasios.kampas@pingidentity.com",
+    "resourceVersion": "1.0"
+  },
+  "nodeTypes": {
+    "14894f8a76cb48f08f87be1224605e27-1": {
+      "serviceName": "14894f8a76cb48f08f87be1224605e27",
+      "displayName": "Retrieve Attributes",
+      "description": "Node that retrieves attribute(s) from IDM and stores them in the Node State",
+      "outcomes": [
+        "true",
+        "error"
+      ],
+      "outputs": [],
+      "inputs": [],
+      "script": "var nodeOutcomes = {\n    TRUE: \"true\",\n    ERROR: \"error\"\n};\n\nfunction getUserIdByAttribute(attributeName, attributeValue) {\n    var queryFilter = `${attributeName} eq '${attributeValue}'`;\n    var userQuery = openidm.query(properties.managedObject, {\n        \"_queryFilter\": queryFilter\n    });\n\n    if (!userQuery || userQuery.resultCount === 0) {\n        logger.error(`No user found for ${attributeName}='${attributeValue}'.`);\n        return null;\n    }\n\n    if (userQuery.resultCount !== 1) {\n        logger.error(`Ambiguous result: Found ${userQuery.resultCount} users for ${attributeName}='${attributeValue}'.`);\n        return null;\n    }\n\n    logger.debug(\"User successfully found and retrieved.\");\n\n    var userId = userQuery.result[0]._id;\n    return userId;\n}\n\nfunction ensureTrailingSlash(managedObject) {\n  return managedObject.replace(/\\/+$/, '') + '/';\n}\n\n(function() {\n    logger.debug(\"node starting\");\n    try {\n        // --- Part 1: Resolve Identity Attribute ---\n        var identityAttribute;\n        var identifier = properties.identifierStateKey || properties.identifier;\n        if (properties.identifierSource == \"NODESTATE\") {\n            identityAttribute = nodeState.get(identifier);\n            logger.debug(`Got identity attribute from nodeState key ${identifier} and value ${identityAttribute}`);\n        } else {\n            var objectAttributes = nodeState.getObject(\"objectAttributes\");\n            identityAttribute = objectAttributes.get(identifier);\n            logger.debug(`Got identity attribute from objectAttributes key ${identifier} and value ${identityAttribute}`);\n        }\n\n        if (!identityAttribute) {\n            logger.error(`Identity attribute was not found. Aborting.`);\n            return action.goTo(nodeOutcomes.ERROR);\n        }\n\n        // --- Part 2: Resolve User ID ---\n        var userId;\n        if (properties.skipIdLookup) {\n            userId = identityAttribute;\n            logger.debug(`User's _id set to identity attribute value ${userId}`);\n        } else {\n            userId = getUserIdByAttribute(properties.identifier, identityAttribute);\n            if (!userId) {\n                logger.warn(`User lookup failed for attribute value: ${identityAttribute}. Aborting.`);\n                return action.goTo(nodeOutcomes.ERROR);\n            }\n            logger.debug(`User's _id resolved to ${userId}`);\n        }\n\n        // --- Part 3: Fetch Profile and Prepare State Update ---\n        var managedObject = ensureTrailingSlash(properties.managedObject);\n        var userProfile = openidm.read(managedObject + userId, null, properties.attributes);\n\n        // --- Part 4: Process Attributes and Update State ---\n        var oa = nodeState.get(\"objectAttributes\"); // init, maybe not used though\n        var objectAttributesIsPresent = true;\n        if (!oa) {\n            var objectAttributesIsPresent = false;\n        }\n        properties.attributes.forEach(function(attributeName) {\n            logger.debug(`Retrieved Attribute name: ${attributeName} with value: ${userProfile[attributeName]}`);\n            if (properties.updateNodeState) {\n                logger.debug(`Updating nodeState with key ${attributeName} and value ${userProfile[attributeName]}`);\n                nodeState.putShared(attributeName, userProfile[attributeName]);\n            }\n            if (properties.updateObjectAttributes) {\n                if (objectAttributesIsPresent) {\n                    logger.debug(`Updating objectAttributes with key ${attributeName} and value ${userProfile[attributeName]}`);\n                    oa[attributeName] = userProfile[attributeName];\n                    nodeState.putShared(\"objectAttributes\", oa);\n                }\n            }\n        });\n        action.goTo(nodeOutcomes.TRUE);\n        return;\n    } catch (e) {\n        logger.error(\"Exception: \" + e);\n        logger.debug(\"Stack trace: \" + e.stack);\n        action.goTo(nodeOutcomes.ERROR);\n    }\n}());",
+      "errorOutcome": false,
+      "tags": [],
+      "properties": {
+        "attributes": {
+          "title": "Attributes to retrieve",
+          "description": "A set of attributes to collect from IDM. Must follow IDM's schema naming convention.",
+          "type": "STRING",
+          "required": true,
+          "multivalued": true
+        },
+        "identifier": {
+          "title": "Identity Attribute",
+          "description": "The attribute name used to identify the object in IDM. Must be unique.",
+          "type": "STRING",
+          "required": true,
+          "multivalued": false
+        },
+        "identifierSource": {
+          "title": "Identity Attribute present in NodeState or ObjectAttributes",
+          "description": "This setting defines where the node should look for the user's identity attribute (like userName or or mail) before performing a lookup in IDM.\n\nNodeState: The value is retrieved from the nodeState object.\nObjectAttributes: The value is retrieved from the objectAttributes object.",
+          "type": "STRING",
+          "required": true,
+          "defaultValue": "NODESTATE",
+          "options": {
+            "OA": "ObjectAttributes",
+            "NODESTATE": "nodeState"
+          },
+          "multivalued": false
+        },
+        "identifierStateKey": {
+          "title": "Identifier key in State",
+          "description": "This setting defines an alternate key name to look for the identity attribute if it's not stored under the standard attribute name in the State.\nIf this field is left empty, the node assumes the key name in the Node State (or ObjectAttributes) is identical to the identity attribute setting.",
+          "type": "STRING",
+          "required": false,
+          "multivalued": false
+        },
+        "managedObject": {
+          "title": "Identity Resource",
+          "description": "The identity resource in IDM that this node will search",
+          "type": "STRING",
+          "required": false,
+          "defaultValue": "managed/alpha_user",
+          "multivalued": false
+        },
+        "skipIdLookup": {
+          "title": "Is Identity Attribute the _id?",
+          "description": "This setting determines whether the provided identity attribute is the user's _id or if it's a lookup value.\n\nWhen True: The input value is treated as the user's unique ID, and the node uses it immediately for the profile lookup.\n\nWhen False: The node performs an internal query to find the user's unique ID based on the input attribute value before proceeding.",
+          "type": "BOOLEAN",
+          "required": true,
+          "defaultValue": false,
+          "multivalued": false
+        },
+        "updateNodeState": {
+          "title": "Store attributes in nodeState",
+          "description": "Whether to store attribute value in the nodeState",
+          "type": "BOOLEAN",
+          "required": false,
+          "defaultValue": true,
+          "multivalued": false
+        },
+        "updateObjectAttributes": {
+          "title": "Store attributes in ObjectAttributes",
+          "description": "Whether to store the attribute in the ObjectAttributes object in NodeState. NOTE: objectAttributes must already be present in state. Otherwise, node will skip this process",
+          "type": "BOOLEAN",
+          "required": false,
+          "defaultValue": false,
+          "multivalued": false
+        }
+      }
+    }
+  }
+}

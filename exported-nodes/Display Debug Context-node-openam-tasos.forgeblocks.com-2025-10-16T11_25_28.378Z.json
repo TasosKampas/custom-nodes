@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "amVersion": "ForgeRock Access Management 8.1.0-SNAPSHOT Build 3fcd04b8178750a006a4b1b1719345d0cba3e68f (2025-October-02 15:38)",
+    "exportDate": "2025-10-16T11:25:28.378Z",
+    "origin": "https://openam-tasos.forgeblocks.com/am/json/node-designer/node-type/",
+    "exportedBy": "anastasios.kampas@pingidentity.com",
+    "resourceVersion": "1.0"
+  },
+  "nodeTypes": {
+    "67dec223e74d4e47b3d6bdcd83359833-1": {
+      "serviceName": "67dec223e74d4e47b3d6bdcd83359833",
+      "displayName": "Display Debug Context",
+      "outcomes": [
+        "next"
+      ],
+      "outputs": [],
+      "inputs": [],
+      "script": "var nodeOutcomes = {\n    NEXT: \"next\"\n};\n\n(function() {\n        logger.debug(\"node executing\");\n        if (callbacks.isEmpty()) {\n            // --- NodeState ---\n            if (properties.state) {\n                nodeState.keys().toArray().forEach(\n                    function(key) {\n                        var value = nodeState.get(key);\n                        callbacksBuilder.stringAttributeInputCallback(key, \"nodeState.\".concat(key), value, false);\n                    }\n                );\n\n                // objectAttributes\n                var oa = nodeState.getObject(\"objectAttributes\");\n                if (!!oa) {\n                    Object.keys(oa).forEach(\n                        function(key) {\n                            callbacksBuilder.stringAttributeInputCallback(key, \"objectAttributes.\".concat(key), oa.get(key), false);\n                        }\n                    );\n                }\n            }\n            // --- Request Parameters ---\n            if (properties.requestParameters) {\n                var requestParamKeys = Object.keys(requestParameters);\n                requestParamKeys.forEach(\n                    function(key) {\n                        var value = requestParameters.get(key).get(0);\n                        callbacksBuilder.stringAttributeInputCallback(key, \"requestParameters.\".concat(key), value, false);\n                    }\n                );\n            }\n            // --- Request Headers ---\n            if (properties.requestHeaders) {\n                var requestHeaderKeys = Object.keys(requestHeaders);\n                requestHeaderKeys.forEach(\n                    function(key) {\n                        var value = requestHeaders.get(key).get(0);\n                        callbacksBuilder.stringAttributeInputCallback(key, \"requestHeaders.\".concat(key), value, false);\n                    }\n                );\n            }\n            // --- Cookies ---\n            if (properties.cookies) {\n                var cookieHeader = requestHeaders.get(\"cookie\");\n                var cookies = cookieHeader.get(0).split(\";\");\n                cookies.forEach(\n                    function(key) {\n                        var cookieSpec = key.split(\"=\");\n                        callbacksBuilder.stringAttributeInputCallback(cookieSpec[0].trim(), \"Cookies.\".concat(cookieSpec[0].trim()), cookieSpec[1].trim(), false);\n                    }\n                );\n            }\n    } else {\n        action.goTo(nodeOutcomes.NEXT);\n    }\n})();",
+      "errorOutcome": false,
+      "tags": [],
+      "properties": {
+        "cookies": {
+          "title": "Display Cookies",
+          "description": "Display all Cookies",
+          "type": "BOOLEAN",
+          "required": false,
+          "defaultValue": true,
+          "multivalued": false
+        },
+        "requestHeaders": {
+          "title": "Display request headers",
+          "description": "Display all request headers",
+          "type": "BOOLEAN",
+          "required": false,
+          "defaultValue": true,
+          "multivalued": false
+        },
+        "requestParameters": {
+          "title": "Display request parameters",
+          "description": "Display all request query parameters",
+          "type": "BOOLEAN",
+          "required": false,
+          "defaultValue": true,
+          "multivalued": false
+        },
+        "state": {
+          "title": "Display Node State",
+          "description": "Display Node State",
+          "type": "BOOLEAN",
+          "required": false,
+          "defaultValue": true,
+          "multivalued": false
+        }
+      }
+    }
+  }
+}

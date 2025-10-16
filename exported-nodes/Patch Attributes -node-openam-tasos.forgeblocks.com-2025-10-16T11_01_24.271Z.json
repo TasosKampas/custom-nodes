@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "amVersion": "ForgeRock Access Management 8.1.0-SNAPSHOT Build 3fcd04b8178750a006a4b1b1719345d0cba3e68f (2025-October-02 15:38)",
+    "exportDate": "2025-10-16T11:01:24.271Z",
+    "origin": "https://openam-tasos.forgeblocks.com/am/json/node-designer/node-type/",
+    "exportedBy": "anastasios.kampas@pingidentity.com",
+    "resourceVersion": "1.0"
+  },
+  "nodeTypes": {
+    "108450719afa4939a79e2db078b05632-1": {
+      "serviceName": "108450719afa4939a79e2db078b05632",
+      "displayName": "Patch Attributes ",
+      "description": "Node that patches selected attributes into IDM with values coming from the Node State",
+      "outcomes": [
+        "true",
+        "error"
+      ],
+      "outputs": [],
+      "inputs": [],
+      "script": "var nodeOutcomes = {\n    TRUE: \"true\",\n    ERROR: \"error\"\n};\n\nfunction getUserIdByAttribute(attributeName, attributeValue) {\n    var queryFilter = `${attributeName} eq '${attributeValue}'`;\n    logger.debug(`Searching user with query filter ${queryFilter}`);\n    var userQuery = openidm.query(properties.managedObject, {\n        \"_queryFilter\": queryFilter\n    });\n\n    if (!userQuery || userQuery.resultCount === 0) {\n        logger.debug(`No user found for ${attributeName}='${attributeValue}'.`);\n        return null;\n    }\n\n    if (userQuery.resultCount !== 1) {\n        logger.error(`Ambiguous result: Found ${userQuery.resultCount} users for ${attributeName}='${attributeValue}'.`);\n        return null;\n    }\n\n    logger.debug(\"User successfully found and retrieved.\");\n\n    var userId = userQuery.result[0]._id;\n    return userId;\n}\n\nfunction getAttributeBasedOnConfig(attributeName) {\n    var attributeValue;\n    if (properties.attributesSource == \"NODESTATE\") {\n        attributeValue = nodeState.get(attributeName);\n        logger.debug(`Retrieved attribute from nodeState key ${attributeName} and value ${attributeValue}`);\n        return attributeValue;\n    }\n    var objectAttributes = nodeState.getObject(\"objectAttributes\");\n    attributeValue = objectAttributes.get(attributeName);\n    logger.debug(`Retrieved attribute from objectAttributes key ${attributeName} and value ${attributeValue}`);\n    return attributeValue;\n}\n\nfunction ensureTrailingSlash(managedObject) {\n  return managedObject.replace(/\\/+$/, '') + '/';\n}\n\nfunction prepareRequestBody(attributes) {\n\n    var requestBody = [];\n\n    attributes.forEach(function(attributeName) {\n        var attributeValue = getAttributeBasedOnConfig(attributeName);\n        requestBody.push({\n            operation: \"replace\",\n            field: \"/\" + attributeName,\n            value: attributeValue\n        })\n        logger.debug(`Added ${attributeName} to request body`);\n    });\n    return requestBody;\n}\n\n/**\n * Node entry point\n */\n(function() {\n    logger.debug(\"node starting\");\n    try {\n        // --- Part 1: Resolve Identity Attribute ---\n        var identityAttribute;\n        var identifier = properties.identifierStateKey || properties.identifier;\n        if (properties.identifierSource == \"NODESTATE\") {\n            identityAttribute = nodeState.get(identifier);\n            logger.debug(`Got identity attribute from nodeState key ${identifier} and value ${identityAttribute}`);\n        } else {\n            var objectAttributes = nodeState.getObject(\"objectAttributes\");\n            identityAttribute = objectAttributes.get(identifier);\n            logger.debug(`Got identity attribute from objectAttributes key ${identifier} and value ${identityAttribute}`);\n        }\n\n        if (!identityAttribute) {\n            logger.warn(`Identity attribute was not found. Aborting.`);\n            return action.goTo(nodeOutcomes.ERROR);\n        }\n\n        // --- Part 2: Resolve User ID ---\n        var userId;\n        if (properties.skipIdLookup) {\n            userId = identityAttribute;\n            logger.debug(`User's _id set to identity attribute value ${userId}`);\n        } else {\n            userId = getUserIdByAttribute(properties.identifier, identityAttribute);\n            if (!userId) {\n                logger.warn(`User lookup failed for attribute value: ${identityAttribute}. Aborting.`);\n                return action.goTo(nodeOutcomes.ERROR);\n            }\n            logger.debug(`User's _id resolved to ${userId}`);\n        }\n\n        // --- Part 3: Update attributes in profile ---\n        var requestBody = prepareRequestBody(properties.attributes);\n        var managedObject = ensureTrailingSlash(properties.managedObject);\n\n        openidm.patch(managedObject + userId, null, requestBody);\n        logger.debug(\"Attributes successfully patched.\");\n        action.goTo(nodeOutcomes.TRUE);\n    } catch (e) {\n        logger.error(\"Exception: \" + e);\n        logger.debug(\"Stack trace: \" + e.stack);\n        action.goTo(nodeOutcomes.ERROR);\n    }\n})();",
+      "errorOutcome": false,
+      "tags": [],
+      "properties": {
+        "attributes": {
+          "title": "Attribute Fields to patch",
+          "description": "The set of attributes you want to patch.",
+          "type": "STRING",
+          "required": true,
+          "multivalued": true
+        },
+        "attributesSource": {
+          "title": "Source for Attribute Fields",
+          "description": "The nodeState source where the list of attributes to be patched by IDM is defined.",
+          "type": "STRING",
+          "required": true,
+          "defaultValue": "OA",
+          "options": {
+            "OA": "ObjectAttributes",
+            "NODESTATE": "nodeState"
+          },
+          "multivalued": false
+        },
+        "identifier": {
+          "title": "Identity Attribute",
+          "description": "The attribute name used to identify the object in IDM. Must be unique.",
+          "type": "STRING",
+          "required": true,
+          "multivalued": false
+        },
+        "identifierSource": {
+          "title": "Identity Attribute present in NodeState or ObjectAttributes",
+          "description": "This setting defines where the node should look for the user's identity attribute (like userName or or mail) before performing a lookup in IDM.\n\nNodeState: The value is retrieved from the nodeState object.\nObjectAttributes: The value is retrieved from the objectAttributes object.",
+          "type": "STRING",
+          "required": true,
+          "defaultValue": "NODESTATE",
+          "options": {
+            "OA": "ObjectAttributes",
+            "NODESTATE": "nodeState"
+          },
+          "multivalued": false
+        },
+        "identifierStateKey": {
+          "title": "Identifier key in State",
+          "description": "This setting defines an alternate key name to look for the identity attribute if it's not stored under the standard attribute name in the State.\nIf this field is left empty, the node assumes the key name in the Node State (or ObjectAttributes) is identical to the identity attribute setting.",
+          "type": "STRING",
+          "required": false,
+          "multivalued": false
+        },
+        "managedObject": {
+          "title": "Identity Resource",
+          "description": "The identity resource in IDM that this node will search",
+          "type": "STRING",
+          "required": false,
+          "defaultValue": "managed/alpha_user",
+          "multivalued": false
+        },
+        "skipIdLookup": {
+          "title": "Is Identity Attribute the _id?",
+          "description": "This setting determines whether the provided identity attribute is the user's _id or if it's a lookup value.\n\nWhen True: The input value is treated as the user's unique ID, and the node uses it immediately for the profile lookup.\n\nWhen False: The node performs an internal query to find the user's unique ID based on the input attribute value before proceeding.",
+          "type": "BOOLEAN",
+          "required": true,
+          "defaultValue": false,
+          "multivalued": false
+        }
+      }
+    }
+  }
+}

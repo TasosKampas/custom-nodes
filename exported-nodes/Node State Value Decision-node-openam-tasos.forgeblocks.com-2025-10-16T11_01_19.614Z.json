@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "amVersion": "ForgeRock Access Management 8.1.0-SNAPSHOT Build 3fcd04b8178750a006a4b1b1719345d0cba3e68f (2025-October-02 15:38)",
+    "exportDate": "2025-10-16T11:01:19.614Z",
+    "origin": "https://openam-tasos.forgeblocks.com/am/json/node-designer/node-type/",
+    "exportedBy": "anastasios.kampas@pingidentity.com",
+    "resourceVersion": "1.0"
+  },
+  "nodeTypes": {
+    "263b8a5a5173438198434bd1c35a3d9b-1": {
+      "serviceName": "263b8a5a5173438198434bd1c35a3d9b",
+      "displayName": "Node State Value Decision",
+      "description": "Verifies the node state's specified key matches a specified condition.",
+      "outcomes": [
+        "true",
+        "false"
+      ],
+      "outputs": [],
+      "inputs": [],
+      "script": "var nodeOutcomes = {\n    TRUE: \"true\",\n    FALSE: \"false\"\n};\n\nfunction presenceCheck(key) {\n    if (properties.keySource === \"NODESTATE\" && nodeState.isDefined(key)) {\n        logger.debug(\"presenceCheck in nodeState\");\n        return true;\n    } else if (properties.keySource === \"OBJECTATTRIBUTES\" && key in nodeState.getObject(\"objectAttributes\")) {\n        logger.debug(\"presenceCheck in objectAttributes\");\n        return true;\n    }\n\n    return false;\n}\n\nfunction resolveKeyValue(key) {\n    if (properties.keySource === \"NODESTATE\") {\n        return nodeState.get(key);\n    } else {\n        return nodeState.getObject(\"objectAttributes\").get(key);\n    }\n}\n\n(function() {\n    logger.debug(\"node executing\");\n\n    if (properties.comparisonOperation === \"PRESENT\" && presenceCheck(properties.nodeStateKey)) {\n        logger.debug(`Node state key ${properties.nodeStateKey} is present`);\n        action.goTo(nodeOutcomes.TRUE);\n        return;\n    }\n    var stateKey = resolveKeyValue(properties.nodeStateKey)\n    if (stateKey === properties.comparisonValue) {\n        logger.debug(`Node state key ${properties.nodeStateKey} value is equal to ${properties.comparisonValue}`);\n        action.goTo(nodeOutcomes.TRUE);\n        return;\n    }\n    logger.debug(\"Comparison was not successful.\");\n    action.goTo(nodeOutcomes.FALSE);\n    return;\n})();",
+      "errorOutcome": false,
+      "tags": [],
+      "properties": {
+        "comparisonOperation": {
+          "title": "Comparison Operation",
+          "description": "The operation to perform on the state key; PRESENT checks for existence of a key, EQUALS checks if the key's value equals the configured comparison value.",
+          "type": "STRING",
+          "required": true,
+          "defaultValue": "PRESENT",
+          "options": {
+            "EQUALS": "EQUALS",
+            "PRESENT": "PRESENT"
+          },
+          "multivalued": false
+        },
+        "comparisonValue": {
+          "title": "Comparison Value",
+          "description": "Comparison Value",
+          "type": "STRING",
+          "required": true,
+          "multivalued": false
+        },
+        "keySource": {
+          "title": "State key present in NodeState or objectAttributes",
+          "description": "This setting defines where the node should look for the key before performing the comparison.",
+          "type": "STRING",
+          "required": true,
+          "defaultValue": "NODESTATE",
+          "options": {
+            "OBJECTATTRIBUTES": "objectAttributes",
+            "NODESTATE": "nodeState"
+          },
+          "multivalued": false
+        },
+        "nodeStateKey": {
+          "title": "State key",
+          "description": "nodeStateKey",
+          "type": "STRING",
+          "required": true,
+          "multivalued": false
+        }
+      }
+    }
+  }
+}

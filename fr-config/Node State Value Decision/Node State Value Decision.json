@@ -1,0 +1,58 @@
+{
+  "_id": "263b8a5a5173438198434bd1c35a3d9b-1",
+  "_rev": "144079708",
+  "description": "Verifies the node state's specified key matches a specified condition.",
+  "displayName": "Node State Value Decision",
+  "errorOutcome": false,
+  "inputs": [],
+  "outcomes": [
+    "true",
+    "false"
+  ],
+  "outputs": [],
+  "properties": {
+    "comparisonOperation": {
+      "defaultValue": "PRESENT",
+      "description": "The operation to perform on the state key; PRESENT checks for existence of a key, EQUALS checks if the key's value equals the configured comparison value.",
+      "multivalued": false,
+      "options": {
+        "EQUALS": "EQUALS",
+        "PRESENT": "PRESENT"
+      },
+      "required": true,
+      "title": "Comparison Operation",
+      "type": "STRING"
+    },
+    "comparisonValue": {
+      "description": "Comparison Value",
+      "multivalued": false,
+      "required": true,
+      "title": "Comparison Value",
+      "type": "STRING"
+    },
+    "keySource": {
+      "defaultValue": "NODESTATE",
+      "description": "This setting defines where the node should look for the key before performing the comparison.",
+      "multivalued": false,
+      "options": {
+        "NODESTATE": "nodeState",
+        "OBJECTATTRIBUTES": "objectAttributes"
+      },
+      "required": true,
+      "title": "State key present in NodeState or objectAttributes",
+      "type": "STRING"
+    },
+    "nodeStateKey": {
+      "description": "nodeStateKey",
+      "multivalued": false,
+      "required": true,
+      "title": "State key",
+      "type": "STRING"
+    }
+  },
+  "script": {
+    "file": "Node State Value Decision.js"
+  },
+  "serviceName": "263b8a5a5173438198434bd1c35a3d9b",
+  "tags": []
+}

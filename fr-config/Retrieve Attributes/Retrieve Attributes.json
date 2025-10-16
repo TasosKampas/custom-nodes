@@ -1,0 +1,85 @@
+{
+  "_id": "14894f8a76cb48f08f87be1224605e27-1",
+  "_rev": "746486943",
+  "description": "Node that retrieves attribute(s) from IDM and stores them in the Node State",
+  "displayName": "Retrieve Attributes",
+  "errorOutcome": false,
+  "inputs": [],
+  "outcomes": [
+    "true",
+    "error"
+  ],
+  "outputs": [],
+  "properties": {
+    "attributes": {
+      "description": "A set of attributes to collect from IDM. Must follow IDM's schema naming convention.",
+      "multivalued": true,
+      "required": true,
+      "title": "Attributes to retrieve",
+      "type": "STRING"
+    },
+    "identifier": {
+      "description": "The attribute name used to identify the object in IDM. Must be unique.",
+      "multivalued": false,
+      "required": true,
+      "title": "Identity Attribute",
+      "type": "STRING"
+    },
+    "identifierSource": {
+      "defaultValue": "NODESTATE",
+      "description": "This setting defines where the node should look for the user's identity attribute (like userName or or mail) before performing a lookup in IDM.\n\nNodeState: The value is retrieved from the nodeState object.\nObjectAttributes: The value is retrieved from the objectAttributes object.",
+      "multivalued": false,
+      "options": {
+        "NODESTATE": "nodeState",
+        "OA": "ObjectAttributes"
+      },
+      "required": true,
+      "title": "Identity Attribute present in NodeState or ObjectAttributes",
+      "type": "STRING"
+    },
+    "identifierStateKey": {
+      "description": "This setting defines an alternate key name to look for the identity attribute if it's not stored under the standard attribute name in the State.\nIf this field is left empty, the node assumes the key name in the Node State (or ObjectAttributes) is identical to the identity attribute setting.",
+      "multivalued": false,
+      "required": false,
+      "title": "Identifier key in State",
+      "type": "STRING"
+    },
+    "managedObject": {
+      "defaultValue": "managed/alpha_user",
+      "description": "The identity resource in IDM that this node will search",
+      "multivalued": false,
+      "required": false,
+      "title": "Identity Resource",
+      "type": "STRING"
+    },
+    "skipIdLookup": {
+      "defaultValue": false,
+      "description": "This setting determines whether the provided identity attribute is the user's _id or if it's a lookup value.\n\nWhen True: The input value is treated as the user's unique ID, and the node uses it immediately for the profile lookup.\n\nWhen False: The node performs an internal query to find the user's unique ID based on the input attribute value before proceeding.",
+      "multivalued": false,
+      "required": true,
+      "title": "Is Identity Attribute the _id?",
+      "type": "BOOLEAN"
+    },
+    "updateNodeState": {
+      "defaultValue": true,
+      "description": "Whether to store attribute value in the nodeState",
+      "multivalued": false,
+      "required": false,
+      "title": "Store attributes in nodeState",
+      "type": "BOOLEAN"
+    },
+    "updateObjectAttributes": {
+      "defaultValue": false,
+      "description": "Whether to store the attribute in the ObjectAttributes object in NodeState. NOTE: objectAttributes must already be present in state. Otherwise, node will skip this process",
+      "multivalued": false,
+      "required": false,
+      "title": "Store attributes in ObjectAttributes",
+      "type": "BOOLEAN"
+    }
+  },
+  "script": {
+    "file": "Retrieve Attributes.js"
+  },
+  "serviceName": "14894f8a76cb48f08f87be1224605e27",
+  "tags": []
+}

@@ -1,0 +1,78 @@
+{
+  "meta": {
+    "amVersion": "ForgeRock Access Management 8.1.0-SNAPSHOT Build 3fcd04b8178750a006a4b1b1719345d0cba3e68f (2025-October-02 15:38)",
+    "exportDate": "2025-10-16T11:01:15.040Z",
+    "origin": "https://openam-tasos.forgeblocks.com/am/json/node-designer/node-type/",
+    "exportedBy": "anastasios.kampas@pingidentity.com",
+    "resourceVersion": "1.0"
+  },
+  "nodeTypes": {
+    "0c3baa7c34204361a9397934271e8616-1": {
+      "serviceName": "0c3baa7c34204361a9397934271e8616",
+      "displayName": "Identify Existing User by Attribute",
+      "description": "Identify User by Attribute",
+      "outcomes": [
+        "true",
+        "false",
+        "error"
+      ],
+      "outputs": [],
+      "inputs": [],
+      "script": "var nodeOutcomes = {\n    TRUE: \"true\",\n    FALSE: \"false\",\n    ERROR: \"error\"\n};\n\nfunction getUserIdByAttribute(attributeName, attributeValue) {\n    logger.debug(`managedObject: ${properties.managedObject}.`);\n    var queryFilter = `${attributeName} eq '${attributeValue}'`;\n    var userQuery = openidm.query(ensureTrailingSlash(properties.managedObject), {\n        \"_queryFilter\": queryFilter\n    });\n\n    if (!userQuery || userQuery.resultCount === 0) {\n        logger.error(`No user found for ${attributeName}='${attributeValue}'.`);\n        return null;\n    }\n\n    if (userQuery.resultCount !== 1) {\n        logger.error(`Ambiguous result: Found ${userQuery.resultCount} users for ${attributeName}='${attributeValue}'.`);\n        return null;\n    }\n\n    logger.debug(\"User successfully found and retrieved.\");\n\n    var userId = userQuery.result[0]._id;\n    return userId;\n}\n\nfunction ensureTrailingSlash(managedObject) {\n  return managedObject.replace(/\\/+$/, '') + '/';\n}\n\n(function() {\n    logger.debug(\"node starting\");\n    try {\n        // --- Part 1: Resolve Identifier ---\n        var identifier;\n        var identifierKey = properties.identifierStateKey;\n        if (properties.identifierSource == \"NODESTATE\") {\n            identifier = nodeState.get(identifierKey);\n            logger.debug(`Got identity attribute from nodeState key ${identifierKey} and value ${identifier}`);\n        } else {\n            var objectAttributes = nodeState.getObject(\"objectAttributes\");\n            identifier = objectAttributes.get(identifierKey);\n            logger.debug(`Got identity attribute from objectAttributes key ${identifierKey} and value ${identifier}`);\n        }\n\n        if (!identifier) {\n            logger.error(`Identifier was not found. Aborting.`);\n            return action.goTo(nodeOutcomes.FALSE);\n        }\n\n        // --- Part 2: Resolve User ID ---\n        var userId = getUserIdByAttribute(properties.identityAttribute, identifier);\n        if (!userId) {\n            logger.warn(`User lookup failed for attribute value: ${identifier} and attribute key ${properties.identityAttribute}. Aborting.`);\n            return action.goTo(nodeOutcomes.FALSE);\n        }\n        logger.debug(`User's _id resolved to ${userId}`);\n\n\n        // --- Part 3: Store User ID in Node State ---\n        if (properties.storeUserId) {\n            logger.debug(`Updating nodeState with key ${properties.nodeStateUserIdPropertyName} and value ${userId}`);\n            nodeState.putShared(properties.nodeStateUserIdPropertyName, userId);\n        }\n\n        action.goTo(nodeOutcomes.TRUE);\n        return;\n    } catch (e) {\n        logger.error(\"Exception: \" + e);\n        logger.debug(\"Stack trace: \" + e.stack);\n        action.goTo(nodeOutcomes.ERROR);\n    }\n}());",
+      "errorOutcome": false,
+      "tags": [],
+      "properties": {
+        "identifierSource": {
+          "title": "Identifier Key present in NodeState or ObjectAttributes",
+          "description": "Identifier present in NodeState or ObjectAttributes",
+          "type": "STRING",
+          "required": true,
+          "defaultValue": "NODESTATE",
+          "options": {
+            "OBJECTATTRIBUTES": "objectAttributes",
+            "NODESTATE": "nodeState"
+          },
+          "multivalued": false
+        },
+        "identifierStateKey": {
+          "title": "Identifier key in State",
+          "description": "This setting defines an alternate key name to look for the identity attribute if it's not stored under the standard attribute name in the State.\\nIf this field is left empty, the node assumes the key name in the Node State (or ObjectAttributes) is identical to the identity attribute setting.",
+          "type": "STRING",
+          "required": false,
+          "multivalued": false
+        },
+        "identityAttribute": {
+          "title": "Identity Attribute",
+          "description": "The attribute name used to identify the object in IDM. Must be unique.",
+          "type": "STRING",
+          "required": true,
+          "multivalued": false
+        },
+        "managedObject": {
+          "title": "Object Resource",
+          "description": "The object resource in IDM that this node will search.",
+          "type": "STRING",
+          "required": false,
+          "defaultValue": "managed/alpha_user",
+          "multivalued": false
+        },
+        "nodeStateUserIdPropertyName": {
+          "title": "Node State Property Name",
+          "description": "The name of the key in the Node State that will hold the user's unique ID (_id). This setting is only used if you enable storing the User ID in Node State.",
+          "type": "STRING",
+          "required": false,
+          "defaultValue": "_id",
+          "multivalued": false
+        },
+        "storeUserId": {
+          "title": "Store User ID in Node State",
+          "description": "Store User ID in Node State",
+          "type": "BOOLEAN",
+          "required": false,
+          "defaultValue": true,
+          "multivalued": false
+        }
+      }
+    }
+  }
+}

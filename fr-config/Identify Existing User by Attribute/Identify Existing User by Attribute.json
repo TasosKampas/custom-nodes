@@ -1,0 +1,71 @@
+{
+  "_id": "0c3baa7c34204361a9397934271e8616-1",
+  "_rev": "-1367854920",
+  "description": "Identify User by Attribute",
+  "displayName": "Identify Existing User by Attribute",
+  "errorOutcome": false,
+  "inputs": [],
+  "outcomes": [
+    "true",
+    "false",
+    "error"
+  ],
+  "outputs": [],
+  "properties": {
+    "identifierSource": {
+      "defaultValue": "NODESTATE",
+      "description": "Identifier present in NodeState or ObjectAttributes",
+      "multivalued": false,
+      "options": {
+        "NODESTATE": "nodeState",
+        "OBJECTATTRIBUTES": "objectAttributes"
+      },
+      "required": true,
+      "title": "Identifier Key present in NodeState or ObjectAttributes",
+      "type": "STRING"
+    },
+    "identifierStateKey": {
+      "description": "This setting defines an alternate key name to look for the identity attribute if it's not stored under the standard attribute name in the State.\\nIf this field is left empty, the node assumes the key name in the Node State (or ObjectAttributes) is identical to the identity attribute setting.",
+      "multivalued": false,
+      "required": false,
+      "title": "Identifier key in State",
+      "type": "STRING"
+    },
+    "identityAttribute": {
+      "description": "The attribute name used to identify the object in IDM. Must be unique.",
+      "multivalued": false,
+      "required": true,
+      "title": "Identity Attribute",
+      "type": "STRING"
+    },
+    "managedObject": {
+      "defaultValue": "managed/alpha_user",
+      "description": "The object resource in IDM that this node will search.",
+      "multivalued": false,
+      "required": false,
+      "title": "Object Resource",
+      "type": "STRING"
+    },
+    "nodeStateUserIdPropertyName": {
+      "defaultValue": "_id",
+      "description": "The name of the key in the Node State that will hold the user's unique ID (_id). This setting is only used if you enable storing the User ID in Node State.",
+      "multivalued": false,
+      "required": false,
+      "title": "Node State Property Name",
+      "type": "STRING"
+    },
+    "storeUserId": {
+      "defaultValue": true,
+      "description": "Store User ID in Node State",
+      "multivalued": false,
+      "required": false,
+      "title": "Store User ID in Node State",
+      "type": "BOOLEAN"
+    }
+  },
+  "script": {
+    "file": "Identify Existing User by Attribute.js"
+  },
+  "serviceName": "0c3baa7c34204361a9397934271e8616",
+  "tags": []
+}

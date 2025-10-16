@@ -1,0 +1,28 @@
+{
+  "_id": "0220e284d974443c8d131c3f9a27e295-1",
+  "_rev": "-287407041",
+  "description": "Checks if an ESV value is true or false",
+  "displayName": "ESV Boolean Check",
+  "errorOutcome": false,
+  "inputs": [],
+  "outcomes": [
+    "true",
+    "false",
+    "error"
+  ],
+  "outputs": [],
+  "properties": {
+    "esvName": {
+      "description": "The ESV key in the form of esv.test (without brackets)",
+      "multivalued": false,
+      "required": true,
+      "title": "The ESV key",
+      "type": "STRING"
+    }
+  },
+  "script": {
+    "file": "ESV Boolean Check.js"
+  },
+  "serviceName": "0220e284d974443c8d131c3f9a27e295",
+  "tags": []
+}

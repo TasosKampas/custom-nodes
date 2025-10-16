@@ -1,0 +1,81 @@
+{
+  "_id": "108450719afa4939a79e2db078b05632-1",
+  "_rev": "1507509978",
+  "description": "Node that patches selected attributes into IDM with values coming from the Node State",
+  "displayName": "Patch Attributes ",
+  "errorOutcome": false,
+  "inputs": [],
+  "outcomes": [
+    "true",
+    "error"
+  ],
+  "outputs": [],
+  "properties": {
+    "attributes": {
+      "description": "The set of attributes you want to patch.",
+      "multivalued": true,
+      "required": true,
+      "title": "Attribute Fields to patch",
+      "type": "STRING"
+    },
+    "attributesSource": {
+      "defaultValue": "OA",
+      "description": "The nodeState source where the list of attributes to be patched by IDM is defined.",
+      "multivalued": false,
+      "options": {
+        "NODESTATE": "nodeState",
+        "OA": "ObjectAttributes"
+      },
+      "required": true,
+      "title": "Source for Attribute Fields",
+      "type": "STRING"
+    },
+    "identifier": {
+      "description": "The attribute name used to identify the object in IDM. Must be unique.",
+      "multivalued": false,
+      "required": true,
+      "title": "Identity Attribute",
+      "type": "STRING"
+    },
+    "identifierSource": {
+      "defaultValue": "NODESTATE",
+      "description": "This setting defines where the node should look for the user's identity attribute (like userName or or mail) before performing a lookup in IDM.\n\nNodeState: The value is retrieved from the nodeState object.\nObjectAttributes: The value is retrieved from the objectAttributes object.",
+      "multivalued": false,
+      "options": {
+        "NODESTATE": "nodeState",
+        "OA": "ObjectAttributes"
+      },
+      "required": true,
+      "title": "Identity Attribute present in NodeState or ObjectAttributes",
+      "type": "STRING"
+    },
+    "identifierStateKey": {
+      "description": "This setting defines an alternate key name to look for the identity attribute if it's not stored under the standard attribute name in the State.\nIf this field is left empty, the node assumes the key name in the Node State (or ObjectAttributes) is identical to the identity attribute setting.",
+      "multivalued": false,
+      "required": false,
+      "title": "Identifier key in State",
+      "type": "STRING"
+    },
+    "managedObject": {
+      "defaultValue": "managed/alpha_user",
+      "description": "The identity resource in IDM that this node will search",
+      "multivalued": false,
+      "required": false,
+      "title": "Identity Resource",
+      "type": "STRING"
+    },
+    "skipIdLookup": {
+      "defaultValue": false,
+      "description": "This setting determines whether the provided identity attribute is the user's _id or if it's a lookup value.\n\nWhen True: The input value is treated as the user's unique ID, and the node uses it immediately for the profile lookup.\n\nWhen False: The node performs an internal query to find the user's unique ID based on the input attribute value before proceeding.",
+      "multivalued": false,
+      "required": true,
+      "title": "Is Identity Attribute the _id?",
+      "type": "BOOLEAN"
+    }
+  },
+  "script": {
+    "file": "Patch Attributes .js"
+  },
+  "serviceName": "108450719afa4939a79e2db078b05632",
+  "tags": []
+}

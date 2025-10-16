@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "amVersion": "ForgeRock Access Management 8.1.0-SNAPSHOT Build 3fcd04b8178750a006a4b1b1719345d0cba3e68f (2025-October-02 15:38)",
+    "exportDate": "2025-10-16T11:25:22.939Z",
+    "origin": "https://openam-tasos.forgeblocks.com/am/json/node-designer/node-type/",
+    "exportedBy": "anastasios.kampas@pingidentity.com",
+    "resourceVersion": "1.0"
+  },
+  "nodeTypes": {
+    "0220e284d974443c8d131c3f9a27e295-1": {
+      "serviceName": "0220e284d974443c8d131c3f9a27e295",
+      "displayName": "ESV Boolean Check",
+      "description": "The ESV key in the form of esv.test (without brackets)",
+      "outcomes": [
+        "true",
+        "false",
+        "error"
+      ],
+      "outputs": [],
+      "inputs": [],
+      "script": "var nodeOutcomes = {\n    TRUE: \"true\",\n    FALSE: \"false\",\n    ERROR: \"error\"\n};\n\n(function() {\n    logger.debug(\"node starting\");\n    try {\n\n        var esvValue = systemEnv.getProperty(properties.esvName);\n\n        if (esvValue === null || esvValue === undefined) {\n            logger.error(`ESV property '${properties.esvName}' was not found.`);\n            return action.goTo(nodeOutcomes.ERROR);\n        }\n\n        logger.debug(`Retrieved ESV value for '${properties.esvName}': ${esvValue}`);\n        \n        if (esvValue === \"true\") {\n            return action.goTo(nodeOutcomes.TRUE);\n        } else if (esvValue === \"false\") {\n            return action.goTo(nodeOutcomes.FALSE);\n        }\n        logger.error(`ESV property '${properties.esvName}' has an unexpected value: ${esvValue}. Expected \"true\" or \"false\".`);\n        return action.goTo(nodeOutcomes.ERROR).build();\n    } catch (e) {\n        logger.warn(\"Could not retrieve ESV.\");\n        logger.error(\"Encountered an exception: \" + e);\n        return action.goTo(nodeOutcomes.ERROR);\n    }\n}());",
+      "errorOutcome": false,
+      "tags": [],
+      "properties": {
+        "esvName": {
+          "title": "The ESV key",
+          "description": "",
+          "type": "STRING",
+          "required": true,
+          "multivalued": false
+        }
+      }
+    }
+  }
+}

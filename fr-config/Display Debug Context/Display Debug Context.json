@@ -1,0 +1,50 @@
+{
+  "_id": "67dec223e74d4e47b3d6bdcd83359833-1",
+  "_rev": "1815082737",
+  "displayName": "Display Debug Context",
+  "errorOutcome": false,
+  "inputs": [],
+  "outcomes": [
+    "next"
+  ],
+  "outputs": [],
+  "properties": {
+    "cookies": {
+      "defaultValue": true,
+      "description": "Display all Cookies",
+      "multivalued": false,
+      "required": false,
+      "title": "Display Cookies",
+      "type": "BOOLEAN"
+    },
+    "requestHeaders": {
+      "defaultValue": true,
+      "description": "Display all request headers",
+      "multivalued": false,
+      "required": false,
+      "title": "Display request headers",
+      "type": "BOOLEAN"
+    },
+    "requestParameters": {
+      "defaultValue": true,
+      "description": "Display all request query parameters",
+      "multivalued": false,
+      "required": false,
+      "title": "Display request parameters",
+      "type": "BOOLEAN"
+    },
+    "state": {
+      "defaultValue": true,
+      "description": "Display Node State",
+      "multivalued": false,
+      "required": false,
+      "title": "Display Node State",
+      "type": "BOOLEAN"
+    }
+  },
+  "script": {
+    "file": "Display Debug Context.js"
+  },
+  "serviceName": "67dec223e74d4e47b3d6bdcd83359833",
+  "tags": []
+}
