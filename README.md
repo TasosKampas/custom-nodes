@@ -77,6 +77,13 @@ The Node displays debug information into a page. It allows you to fetch
 
 ![Node](images/display-debug-context/config.png)
 
+# Merge objectAttributes
+
+![Journey](images/display-debug-context/journey.png)
+
+The Node merges objectAttributes object into a single storage - useful when objectAttributes is present in both nodeState and transientState. Allows for removing null properties
+
+![Node](images/merge-objectAttributes/config.png)
 
 ## How to use
 
