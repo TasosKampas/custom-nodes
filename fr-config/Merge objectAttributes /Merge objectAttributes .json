@@ -1,0 +1,40 @@
+{
+  "_id": "d7b581908d2f4595b9d8a9814bccb7fb-1",
+  "_rev": "-398877655",
+  "description": "Unifies the objectAttributes data across the Node State and Transient State. The result is a single, definitive objectAttributes object that is maintained in the final state location specified by the node settings.",
+  "displayName": "Merge objectAttributes ",
+  "errorOutcome": false,
+  "inputs": [],
+  "outcomes": [
+    "next",
+    "error"
+  ],
+  "outputs": [],
+  "properties": {
+    "mergeLocation": {
+      "defaultValue": "NODESTATE",
+      "description": "Select to which state the merged objectAttributes will be stored.",
+      "multivalued": false,
+      "options": {
+        "NODESTATE": "nodeState",
+        "TRANSIENTSTATE": "transientState"
+      },
+      "required": true,
+      "title": "Merge objectAttributes into",
+      "type": "STRING"
+    },
+    "removeEmptyProperties": {
+      "defaultValue": true,
+      "description": "When enabled, it'll discard null properties.",
+      "multivalued": false,
+      "required": true,
+      "title": "Remove null properties",
+      "type": "BOOLEAN"
+    }
+  },
+  "script": {
+    "file": "Merge objectAttributes .js"
+  },
+  "serviceName": "d7b581908d2f4595b9d8a9814bccb7fb",
+  "tags": []
+}

@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "amVersion": "ForgeRock Access Management 8.1.0-SNAPSHOT Build f6b8dc82d385c999e1fe55459ee918e5131c6cd0 (2025-October-23 15:08)",
+    "exportDate": "2025-11-03T11:42:26.889Z",
+    "origin": "https://openam-tasos.forgeblocks.com/am/json/node-designer/node-type/",
+    "exportedBy": "anastasios.kampas@pingidentity.com",
+    "resourceVersion": "1.0"
+  },
+  "nodeTypes": {
+    "d7b581908d2f4595b9d8a9814bccb7fb-1": {
+      "serviceName": "d7b581908d2f4595b9d8a9814bccb7fb",
+      "displayName": "Merge objectAttributes ",
+      "description": "Unifies the objectAttributes data across the Node State and Transient State. The result is a single, definitive objectAttributes object that is maintained in the final state location specified by the node settings.",
+      "outcomes": [
+        "next",
+        "error"
+      ],
+      "outputs": [],
+      "inputs": [],
+      "script": "var nodeOutcomes = {\n    NEXT: \"next\",\n    ERROR: \"error\"\n};\n\n(function() {\n    logger.debug(\"node starting\");\n    try {\n        // --- Part 1 - Merge to a single objectAttributes object\n        var existingObjectAttributes = nodeState.getObject(\"objectAttributes\");\n        var newAttributeObject = {};\n        if (!!existingObjectAttributes) {\n                    Object.keys(existingObjectAttributes).forEach(\n                        function(key) {\n                            var value = existingObjectAttributes.get(key);\n                            if (!!value) {\n                                newAttributeObject[key] = value;\n                            } else { // Value is empty/null: Handle removal based on config\n                                if (properties.removeEmptyProperties) {\n                                    logger.debug(`Property key ${key} is empty and will be discarded.`);\n                                } else {\n                                     newAttributeObject[key] = value;\n                                }\n                            }\n                        }\n                    );\n                }\n      \n\t\t// --- Part 2 - Delete objectAttributes from all states\n        nodeState.remove(\"objectAttributes\");\n\n      \t// --- Part 3 - Initialize objectAttributes in the final state location\n        if (properties.mergeLocation === \"NODESTATE\") {\n            nodeState.mergeShared({\n              \"objectAttributes\": newAttributeObject\n            })\n        } else {\n            nodeState.mergeTransient({\n              \"objectAttributes\": newAttributeObject\n            })\n        }\n\n        action.goTo(nodeOutcomes.NEXT);\n    } catch (e) {\n        logger.error(\"Exception \" + e);\n        logger.debug(\"Stack trace \" + e.stack);\n        action.goTo(nodeOutcomes.ERROR);\n    }\n})();",
+      "errorOutcome": false,
+      "tags": [],
+      "properties": {
+        "mergeLocation": {
+          "title": "Merge objectAttributes into",
+          "description": "Select to which state the merged objectAttributes will be stored.",
+          "type": "STRING",
+          "required": true,
+          "defaultValue": "NODESTATE",
+          "options": {
+            "TRANSIENTSTATE": "transientState",
+            "NODESTATE": "nodeState"
+          },
+          "multivalued": false
+        },
+        "removeEmptyProperties": {
+          "title": "Remove null properties",
+          "description": "When enabled, it'll discard null properties.",
+          "type": "BOOLEAN",
+          "required": true,
+          "defaultValue": true,
+          "multivalued": false
+        }
+      }
+    }
+  }
+}
