@@ -1,0 +1,34 @@
+{
+  "_id": "374a601ee16940d5aee0a85323cd1d04-1",
+  "_rev": "1254341834",
+  "displayName": "SAML2 Attribute Mapper",
+  "errorOutcome": true,
+  "inputs": [],
+  "outcomes": [
+    "true",
+    "false"
+  ],
+  "outputs": [],
+  "properties": {
+    "attributesMap": {
+      "description": "",
+      "multivalued": false,
+      "required": true,
+      "title": "Attribute Map",
+      "type": "OBJECT"
+    },
+    "clearObjectAttributes": {
+      "defaultValue": true,
+      "description": "",
+      "multivalued": false,
+      "required": false,
+      "title": "Clear objectAttributes?",
+      "type": "BOOLEAN"
+    }
+  },
+  "script": {
+    "file": "SAML2 Attribute Mapper.js"
+  },
+  "serviceName": "374a601ee16940d5aee0a85323cd1d04",
+  "tags": []
+}

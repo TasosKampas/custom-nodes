@@ -1,0 +1,35 @@
+{
+  "_id": "4023e3ce548f4456955ac9f5f8e61324-1",
+  "_rev": "-282459593",
+  "displayName": "SAML2 Extract NameID",
+  "errorOutcome": true,
+  "inputs": [],
+  "outcomes": [
+    "true",
+    "false"
+  ],
+  "outputs": [],
+  "properties": {
+    "samlNameIdFormatStateVariable": {
+      "defaultValue": "nameIdFormat",
+      "description": "",
+      "multivalued": false,
+      "required": true,
+      "title": "NameID Format Node State Variable",
+      "type": "STRING"
+    },
+    "samlNameIdStateVariable": {
+      "defaultValue": "nameId",
+      "description": "",
+      "multivalued": false,
+      "required": true,
+      "title": "NameID Value Node State Variable",
+      "type": "STRING"
+    }
+  },
+  "script": {
+    "file": "SAML2 Extract NameID.js"
+  },
+  "serviceName": "4023e3ce548f4456955ac9f5f8e61324",
+  "tags": []
+}

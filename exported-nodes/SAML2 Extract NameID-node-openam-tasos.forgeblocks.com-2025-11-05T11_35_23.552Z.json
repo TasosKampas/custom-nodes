@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "amVersion": "ForgeRock Access Management 8.1.0-SNAPSHOT Build f6b8dc82d385c999e1fe55459ee918e5131c6cd0 (2025-October-23 15:08)",
+    "exportDate": "2025-11-05T11:35:23.552Z",
+    "origin": "https://openam-tasos.forgeblocks.com/am/json/node-designer/node-type/",
+    "exportedBy": "anastasios.kampas@pingidentity.com",
+    "resourceVersion": "1.0"
+  },
+  "nodeTypes": {
+    "4023e3ce548f4456955ac9f5f8e61324-1": {
+      "serviceName": "4023e3ce548f4456955ac9f5f8e61324",
+      "displayName": "SAML2 Extract NameID",
+      "description": "Extracts the NameID format and value to the nodeState according to the node config.",
+      "outcomes": [
+        "true",
+        "false"
+      ],
+      "outputs": [],
+      "inputs": [],
+      "script": "var config = {\n    nameIdInfo: \"sun-fm-saml2-nameid-info\" // static\n};\n\nvar nodeOutcomes = {\n    TRUE: \"true\",\n    FALSE: \"false\"\n};\n\n(function() {\n    logger.debug(\"node executing\");\n\n    var userInfo = nodeState.getObject(\"userInfo\");\n    if (!userInfo) {\n        logger.error(\"SAML userInfo not available in the node state\");\n        action.goTo(nodeOutcomes.FALSE);\n    }\n    if (!userInfo.attributes) {\n        logger.error(\"SAML attributes not available in the node state\");\n        action.goTo(nodeOutcomes.FALSE);\n    }\n    \n    var attributes = userInfo.attributes;\n    logger.debug(\"IdP SAML attributes: \" + attributes);\n    \n    var nameIdInfo = attributes.get(config.nameIdInfo);\n    if (nameIdInfo) {\n        var nameId = nameIdInfo[0].split(\"|\")[2];\n        logger.debug(\"normalized nameId \" + nameId);\n        logger.debug(\"Setting nodeState key \" + properties.samlNameIdStateVariable + \" to \" + nameId);\n        nodeState.putShared(properties.samlNameIdStateVariable, nameId);\n        var nameIdInfoFormat = nameIdInfo[0].split(\"|\")[4];\n        logger.debug(\"normalized nameIdInfoFormat \" + nameIdInfoFormat);\n        logger.debug(\"Setting nodeState key \" + properties.samlNameIdFormatStateVariable + \" to \" + nameIdInfoFormat);\n        nodeState.putShared(properties.samlNameIdFormatStateVariable, nameIdInfoFormat);\n    } else {\n        logger.error(\"No NameID in assertion\");\n        action.goTo(nodeOutcomes.FALSE);\n        return;\n    }\n    action.goTo(nodeOutcomes.TRUE);\n})();",
+      "errorOutcome": true,
+      "tags": [],
+      "properties": {
+        "samlNameIdFormatStateVariable": {
+          "title": "NameID Format Node State Variable",
+          "description": "",
+          "type": "STRING",
+          "required": true,
+          "defaultValue": "nameIdFormat",
+          "multivalued": false
+        },
+        "samlNameIdStateVariable": {
+          "title": "NameID Value Node State Variable",
+          "description": "",
+          "type": "STRING",
+          "required": true,
+          "defaultValue": "nameId",
+          "multivalued": false
+        }
+      }
+    }
+  }
+}

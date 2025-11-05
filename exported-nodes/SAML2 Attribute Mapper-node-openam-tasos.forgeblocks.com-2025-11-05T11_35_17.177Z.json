@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "amVersion": "ForgeRock Access Management 8.1.0-SNAPSHOT Build f6b8dc82d385c999e1fe55459ee918e5131c6cd0 (2025-October-23 15:08)",
+    "exportDate": "2025-11-05T11:35:17.177Z",
+    "origin": "https://openam-tasos.forgeblocks.com/am/json/node-designer/node-type/",
+    "exportedBy": "anastasios.kampas@pingidentity.com",
+    "resourceVersion": "1.0"
+  },
+  "nodeTypes": {
+    "374a601ee16940d5aee0a85323cd1d04-1": {
+      "serviceName": "374a601ee16940d5aee0a85323cd1d04",
+      "displayName": "SAML2 Attribute Mapper",
+      "description": "Maps SAML2 attributes to objectAttributes nodeState object.",
+      "outcomes": [
+        "true",
+        "false"
+      ],
+      "outputs": [],
+      "inputs": [],
+      "script": "var nodeOutcomes = {\n    TRUE: \"true\",\n    FALSE: \"false\"\n};\n\nfunction mapAttributes(inputAttributes, mappingConfig) {\n    var finalMappedAttributes = {};\n\n    var mappingKeys = Object.keys(mappingConfig);\n    for (var i = 0; i < mappingKeys.length; i++) {\n        var sourceKey = mappingKeys[i];\n        var targetKey = mappingConfig[sourceKey]; // e.g., \"givenName\"\n\n        // Check if the sourceKey exists in the input attributes\n        if (inputAttributes.containsKey(sourceKey)) {\n            var attributeValue = inputAttributes[sourceKey].get(0);\n            // Map the value using the targetKey\n            logger.debug(\"Mapping \" + targetKey + \" to \" + attributeValue);\n            finalMappedAttributes[targetKey] = attributeValue;\n        }\n    }\n    if (Object.keys(finalMappedAttributes).length === 0) {\n            return null;\n    }\n\n    return finalMappedAttributes;\n}\n\n(function() {\n    logger.debug(\"node executing\");\n    var mappingConfig = properties.attributesMap;\n    logger.debug(\"Mapping config: \" + mappingConfig);\n\n    if (properties.clearObjectAttributes) {\n        if (nodeState.get(\"objectAttributes\")) {\n            nodeState.remove(\"objectAttributes\");\n        }\n    }\n    var userInfo = nodeState.getObject(\"userInfo\");\n    if (!userInfo) {\n        logger.error(\"SAML userInfo not available in the node state\");\n        action.goTo(nodeOutcomes.FALSE);\n    }\n    if (!userInfo.attributes) {\n        logger.error(\"SAML attributes not available in the node state\");\n        action.goTo(nodeOutcomes.FALSE);\n    }\n    \n    var attributes = userInfo.attributes;\n    logger.debug(\"IdP SAML attributes: \" + attributes);\n    try {\n        var newAttributeObject = mapAttributes(attributes, mappingConfig);\n        if (!newAttributeObject) {\n            logger.error(\"No attributes mapped.\");\n            action.goTo(nodeOutcomes.FALSE);\n            return;\n        }\n    \n        logger.debug(\"initializing objectAttributes\");\n        nodeState.mergeShared({\n            \"objectAttributes\": newAttributeObject\n        });\n        action.goTo(nodeOutcomes.TRUE);\n    } catch (e) {\n        logger.error(\"Error getting userInfo variable: \" + e);\n        action.goTo(nodeOutcomes.FALSE);\n        return;\n    }\n})();",
+      "errorOutcome": true,
+      "tags": [],
+      "properties": {
+        "attributesMap": {
+          "title": "Attribute Map",
+          "description": "",
+          "type": "OBJECT",
+          "required": true,
+          "multivalued": false
+        },
+        "clearObjectAttributes": {
+          "title": "Clear objectAttributes?",
+          "description": "",
+          "type": "BOOLEAN",
+          "required": false,
+          "defaultValue": true,
+          "multivalued": false
+        }
+      }
+    }
+  }
+}
