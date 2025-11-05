@@ -83,6 +83,29 @@ The Node merges objectAttributes object into a single storage - useful when obje
 
 ![Node](images/merge-objectAttributes/config.png)
 
+# SAML2 Attribute Mapper
+
+![Journey](images/saml2-attribute-mapper/journey.png)
+
+The Node maps SAML2 Attributes from the Assertio to objectAttributes object in the state based on the mapping in the node.
+The Attribute Map config works as following:
+* key is the SAML attribute name
+* value is the target objectAttribute key
+![Node](images/saml2-attribute-mapper/config.png)
+
+Below is the state output after the node:
+![State](images/saml2-attribute-mapper/stateOutput.png)
+
+# SAML2 Extract Name ID
+
+![Journey](images/saml2-extract-nameID/journey.png)
+
+The Node extracts the NameID value and format into the respective nodeState keys as per the node config.
+![Node](images/saml2-extract-nameID/config.png)
+
+Below is the state output after the node:
+![State](images/saml2-extract-nameID/stateOutput.png)
+
 ## How to use
 
 Use fr-config-push to push the node into your own AIC tenant or use node importer
